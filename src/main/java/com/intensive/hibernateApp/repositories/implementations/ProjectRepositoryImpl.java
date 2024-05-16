@@ -20,9 +20,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public List<Project> getAllProjects() {
         Session session = sessionFactory.openSession();
-
         List<Project> projectList = session.createQuery("select p from Project p", Project.class).getResultList();
-
         session.close();
 
         return projectList;
@@ -31,7 +29,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public Optional<Project> getProject(Long id) {
         Session session = sessionFactory.openSession();;
-
         Project project = session.get(Project.class, id);
         session.close();
 
@@ -41,50 +38,57 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public Project createProject(Project project) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        try {
+            session.beginTransaction();
+            session.persist(project);
+            session.getTransaction().commit();
+            session.close();
 
-        session.persist(project);
-
-        session.getTransaction().commit();
-        session.close();
-
-        return project;
+            return project;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Project updateProject(Project project) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        try {
+            session.beginTransaction();
+            Project projectUpdated = session.merge(project);
+            session.getTransaction().commit();
+            session.close();
 
-        Project projectUpdated = session.merge(project);
-
-        session.getTransaction().commit();
-        session.close();
-
-        return projectUpdated;
+            return projectUpdated;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Project deleteProject(Project project) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        try {
+            session.beginTransaction();
+            session.remove(project);
+            session.getTransaction().commit();
+            session.close();
 
-        session.remove(project);
-
-        session.getTransaction().commit();
-        session.close();
-
-        return project;
+            return project;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public boolean getProjectByName(String name) {
         Session session = sessionFactory.openSession();
-
         List<Project> projectList = session.createQuery("from Project p where p.name = :name", Project.class)
             .setParameter("name", name)
             .getResultList();
-
         session.close();
 
         return projectList.isEmpty();
@@ -93,28 +97,30 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public Project addEmployeeToProject(Project project, Employee employee) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        try {
+            session.beginTransaction();
+            Project projectConnected = session.merge(project);
+            Employee employeeConnected = session.merge(employee);
 
-        Project projectConnected = session.merge(project);
-        Employee employeeConnected = session.merge(employee);
+            projectConnected.getEmployees().add(employeeConnected);
+            employeeConnected.getProjects().add(projectConnected);
+            Project projectUpdated = session.merge(projectConnected);
 
-        projectConnected.getEmployees().add(employeeConnected);
-        employeeConnected.getProjects().add(projectConnected);
-        Project projectUpdated = session.merge(projectConnected);
+            session.getTransaction().commit();
+            session.close();
 
-        session.getTransaction().commit();
-        session.close();
-
-        return projectUpdated;
+            return projectUpdated;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Set<Employee> getAllEmployeeByProject(Project project) {
         Session session = sessionFactory.openSession();
-
         Project projectConnected = session.merge(project);
         Set<Employee> employeeSet = projectConnected.getEmployees();
-
         session.close();
 
         return employeeSet;

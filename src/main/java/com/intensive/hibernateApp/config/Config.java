@@ -17,6 +17,9 @@ import java.util.Properties;
 @EnableTransactionManagement
 public class Config {
 
+    private final static String ENTITIES_PACKAGE = "com/intensive/hibernateApp/entities";
+    private final static String DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+
     @Value("${spring.datasource.driver-class-name}")
     private String dbDriver;
 
@@ -34,7 +37,7 @@ public class Config {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
         sessionFactory.setPackagesToScan(
-            "com/intensive/hibernateApp/entities");
+            ENTITIES_PACKAGE);
         sessionFactory.setHibernateProperties(hibernateProperties());
 
         return sessionFactory;
@@ -63,9 +66,7 @@ public class Config {
         Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("show_sql","true");
         hibernateProperties.setProperty(
-            "hibernate.hbm2ddl.auto", "none");
-        hibernateProperties.setProperty(
-            "hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+            "hibernate.dialect", DIALECT);
 
         return hibernateProperties;
     }

@@ -29,9 +29,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public List<Employee> getAllEmployees() {
         Session session = sessionFactory.openSession();
-
         List<Employee> employeeList =  session.createQuery("select e from Employee e", Employee.class).getResultList();
-
         session.close();
 
         return employeeList;
@@ -40,9 +38,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public Optional<Employee> getEmployee(Long id) {
         Session session = sessionFactory.openSession();
-
         Employee employee = session.get(Employee.class, id);
-
         session.close();
 
         return Optional.ofNullable(employee);
@@ -50,57 +46,66 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
     public Employee createEmployee(Employee employee, Department department) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        Session session = sessionFactory.openSession();;
+        try {
+            session.beginTransaction();
 
-        Department departmentConnected = session.merge(department);
-        employee.setDepartment(departmentConnected);
-        session.persist(employee);
-        departmentConnected.getEmployees().add(employee);
-        session.merge(departmentConnected);
+            Department departmentConnected = session.merge(department);
+            employee.setDepartment(departmentConnected);
+            session.persist(employee);
+            departmentConnected.getEmployees().add(employee);
+            session.merge(departmentConnected);
 
-        session.getTransaction().commit();
-        session.close();
+            session.getTransaction().commit();
+            session.close();
 
-        return employee;
+            return employee;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Employee updateEmployee(UpdateEmployeeDto updateEmployeeDto, Employee employee) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        try {
+            session.beginTransaction();
+            Employee employeeNewLastName = session.merge(employee);
+            session.getTransaction().commit();
+            session.close();
 
-        Employee employeeNewLastName = session.merge(employee);
-
-        session.getTransaction().commit();
-        session.close();
-
-        return employeeNewLastName;
+            return employeeNewLastName;
+        }catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Employee deleteEmployee(Employee employee) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        try {
+            session.beginTransaction();
+            session.remove(employee);
+            session.getTransaction().commit();
+            session.close();
 
-        session.remove(employee);
-
-        session.getTransaction().commit();
-        session.close();
-
-        return  employee;
+            return employee;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public boolean getEmployeeByFullName(String firstName, String lastName) {
         Session session = sessionFactory.openSession();
-
         List<Employee> employeeList = session.createQuery("from Employee e where e.firstName = :firstName" +
             " and e.lastName = :lastName", Employee.class)
             .setParameter("firstName", firstName)
             .setParameter("lastName", lastName)
             .getResultList();
-
         session.close();
 
         return employeeList.isEmpty();
@@ -109,11 +114,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public Set<Employee> getAllEmployeeByDepartment(Department department) {
         Session session = sessionFactory.openSession();
-
         Department departmentConnected = session.merge(department);
         Set<Employee> employeeSet = departmentConnected.getEmployees();
-        System.out.println(employeeSet);
-
         session.close();
 
         return employeeSet;
@@ -122,10 +124,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public Optional<PersonalCard> getEmployeePersonalCard(Employee employee) {
         Session session = sessionFactory.openSession();
-
         Employee employeeConnected = session.merge(employee);
         PersonalCard personalCard = employeeConnected.getPersonalCard();
-
         session.close();
 
         return Optional.ofNullable(personalCard);
@@ -134,10 +134,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public Set<Project> getAllProjectsByEmployee(Employee employee) {
         Session session = sessionFactory.openSession();
-
         Employee employeeConnected = session.merge(employee);
         Set<Project> projectSet = employeeConnected.getProjects();
-
         session.close();
 
         return projectSet;

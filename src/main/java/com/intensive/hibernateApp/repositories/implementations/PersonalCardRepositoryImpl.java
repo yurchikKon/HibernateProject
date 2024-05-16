@@ -31,7 +31,6 @@ public class PersonalCardRepositoryImpl implements PersonalCardRepository {
     @Override
     public Optional<PersonalCard> getPersonalCard(Long id) {
         Session session = sessionFactory.openSession();;
-
         PersonalCard personalCard = session.get(PersonalCard.class, id);
         session.close();
 
@@ -41,34 +40,49 @@ public class PersonalCardRepositoryImpl implements PersonalCardRepository {
     @Override
     public PersonalCard createPersonalCard(PersonalCard personalCard, Employee employee) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.persist(personalCard);
-        session.merge(employee);
-        session.getTransaction().commit();
-        session.close();
+        try {
+            session.beginTransaction();
+            session.persist(personalCard);
+            session.merge(employee);
+            session.getTransaction().commit();
+            session.close();
 
-        return personalCard;
+            return personalCard;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public PersonalCard updatePersonalCard(PersonalCard personalCard) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        PersonalCard personalCardUpdated = session.merge(personalCard);
-        session.getTransaction().commit();
-        session.close();
+        try {
+            session.beginTransaction();
+            PersonalCard personalCardUpdated = session.merge(personalCard);
+            session.getTransaction().commit();
+            session.close();
 
-        return personalCardUpdated;
+            return personalCardUpdated;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public PersonalCard deletePersonalCard(PersonalCard personalCard) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.remove(personalCard);
-        session.getTransaction().commit();
-        session.close();
+        try {
+            session.beginTransaction();
+            session.remove(personalCard);
+            session.getTransaction().commit();
+            session.close();
 
-        return personalCard;
+            return personalCard;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 }

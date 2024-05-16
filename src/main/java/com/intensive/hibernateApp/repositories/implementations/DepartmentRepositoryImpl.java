@@ -31,7 +31,6 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     @Override
     public Optional<Department> getDepartment(Long id) {
         Session session = sessionFactory.openSession();;
-
         Department department = session.get(Department.class, id);
         session.close();
 
@@ -41,34 +40,49 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     @Override
     public Department createDepartment(Department department) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.persist(department);
-        session.getTransaction().commit();
-        session.close();
+        try {
+            session.beginTransaction();
+            session.persist(department);
+            session.getTransaction().commit();
+            session.close();
 
-        return department;
+            return department;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Department updateDepartment(Department department) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Department departmentUpdated = session.merge(department);
-        session.getTransaction().commit();
-        session.close();
+        try {
+            session.beginTransaction();
+            Department departmentUpdated = session.merge(department);
+            session.getTransaction().commit();
+            session.close();
 
-        return departmentUpdated;
+            return departmentUpdated;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
     public Department deleteDepartment(Department department) {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.remove(department);
-        session.getTransaction().commit();
-        session.close();
+        try {
+            session.beginTransaction();
+            session.remove(department);
+            session.getTransaction().commit();
+            session.close();
 
-        return department;
+            return department;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        }
     }
 
     @Override
