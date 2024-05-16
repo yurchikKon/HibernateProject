@@ -1,8 +1,5 @@
 package com.intensive.hibernateApp.repositories.interfaces;
 
-import com.intensive.hibernateApp.controllers.dtos.employee.CreateEmployeeDto;
-import com.intensive.hibernateApp.controllers.dtos.employee.GetAllEmployeeDto;
-import com.intensive.hibernateApp.controllers.dtos.employee.UpdateEmployeeDto;
 import com.intensive.hibernateApp.entities.Department;
 import com.intensive.hibernateApp.entities.Employee;
 import com.intensive.hibernateApp.entities.PersonalCard;
@@ -23,7 +20,7 @@ public interface EmployeeRepository {
 
     Employee deleteEmployee(Employee employee);
 
-    boolean getEmployeeByFullName(String firstName, String lastName);
+    boolean checkIsEmployeeFullNameFree(String firstName, String lastName);
 
     Set<Employee> getAllEmployeeByDepartment(Long id);
 

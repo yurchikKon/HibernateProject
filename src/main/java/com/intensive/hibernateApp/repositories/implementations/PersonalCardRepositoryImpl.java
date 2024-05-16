@@ -9,6 +9,7 @@ import com.intensive.hibernateApp.repositories.interfaces.PersonalCardRepository
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,67 +22,66 @@ public class PersonalCardRepositoryImpl implements PersonalCardRepository {
 
     @Override
     public List<PersonalCard> getAllPersonalCards() {
-        Session session = sessionFactory.openSession();
-        List<PersonalCard> personalCardList = session.createQuery("select pc from PersonalCard pc", PersonalCard.class).getResultList();
-        session.close();
-
-        return personalCardList;
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("select pc from PersonalCard pc", PersonalCard.class).getResultList();
+        }
     }
 
     @Override
     public Optional<PersonalCard> getPersonalCard(Long id) {
-        Session session = sessionFactory.openSession();;
-        PersonalCard personalCard = session.get(PersonalCard.class, id);
-        session.close();
-
-        return Optional.ofNullable(personalCard);
+        try (Session session = sessionFactory.openSession()) {
+            return Optional.ofNullable(session.get(PersonalCard.class, id));
+        }
     }
 
     @Override
     public PersonalCard createPersonalCard(PersonalCard personalCard, Employee employee) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             session.persist(personalCard);
             session.merge(employee);
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return personalCard;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public PersonalCard updatePersonalCard(PersonalCard personalCard) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession();) {
+            transaction = session.beginTransaction();
             PersonalCard personalCardUpdated = session.merge(personalCard);
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return personalCardUpdated;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public PersonalCard deletePersonalCard(PersonalCard personalCard) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             session.remove(personalCard);
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return personalCard;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }

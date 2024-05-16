@@ -6,6 +6,7 @@ import com.intensive.hibernateApp.repositories.interfaces.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,111 +20,110 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public List<Project> getAllProjects() {
-        Session session = sessionFactory.openSession();
-        List<Project> projectList = session.createQuery("select p from Project p", Project.class).getResultList();
-        session.close();
-
-        return projectList;
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("select p from Project p", Project.class).getResultList();
+        }
     }
 
     @Override
     public Optional<Project> getProject(Long id) {
-        Session session = sessionFactory.openSession();;
-        Project project = session.get(Project.class, id);
-        session.close();
-
-        return Optional.ofNullable(project);
+        try (Session session = sessionFactory.openSession()) {
+            return Optional.ofNullable(session.get(Project.class, id));
+        }
     }
 
     @Override
     public Project createProject(Project project) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             session.persist(project);
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return project;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public Project updateProject(Project project) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             Project projectUpdated = session.merge(project);
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return projectUpdated;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public Project deleteProject(Project project) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             session.remove(project);
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return project;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }
 
     @Override
-    public boolean getProjectByName(String name) {
-        Session session = sessionFactory.openSession();
-        List<Project> projectList = session.createQuery("from Project p where p.name = :name", Project.class)
-            .setParameter("name", name)
-            .getResultList();
-        session.close();
+    public boolean checkIsProjectNameFree(String name) {
+        try (Session session = sessionFactory.openSession()) {
+            List<Project> projectList = session.createQuery("from Project p where p.name = :name", Project.class)
+                .setParameter("name", name)
+                .getResultList();
 
-        return projectList.isEmpty();
+            return projectList.isEmpty();
+        }
     }
 
     @Override
     public Project addEmployeeToProject(Project project, Employee employee) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
             Project projectConnected = session.merge(project);
             Employee employeeConnected = session.merge(employee);
 
             projectConnected.getEmployees().add(employeeConnected);
             employeeConnected.getProjects().add(projectConnected);
             Project projectUpdated = session.merge(projectConnected);
-
-            session.getTransaction().commit();
-            session.close();
+            transaction.commit();
 
             return projectUpdated;
         } catch (Exception e) {
-            session.getTransaction().rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public Set<Employee> getAllEmployeeByProject(Long id) {
-        Session session = sessionFactory.openSession();
-        Project project = session.createQuery("select p from Project p join fetch p.employees e where p.id = :id", Project.class)
-            .setParameter("id", id).uniqueResult();
-        Set<Employee> employeeSet = project.getEmployees();
-        session.close();
+        try (Session session = sessionFactory.openSession()) {
+            Project project = session.createQuery("select p from Project p join fetch p.employees e where p.id = :id", Project.class)
+                .setParameter("id", id).uniqueResult();
+            Set<Employee> employeeSet = project.getEmployees();
 
-        return employeeSet;
+            return employeeSet;
+        }
     }
 }

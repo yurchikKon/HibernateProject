@@ -5,10 +5,10 @@ import com.intensive.hibernateApp.entities.Employee;
 import com.intensive.hibernateApp.entities.Project;
 import com.intensive.hibernateApp.exceptions.NotCorrectPropertiesException;
 import com.intensive.hibernateApp.exceptions.ResourceAlreadyExistException;
-import com.intensive.hibernateApp.exceptions.ResourceNotFoundException;
 import com.intensive.hibernateApp.repositories.interfaces.EmployeeRepository;
 import com.intensive.hibernateApp.repositories.interfaces.ProjectRepository;
 import com.intensive.hibernateApp.services.interfaces.ProjectService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -50,7 +50,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (createProjectDto.getName().isEmpty() || createProjectDto.getCompany().isEmpty()) {
             throw new NotCorrectPropertiesException("Name or company can not be empty");
         }
-        else if (projectRepository.getProjectByName(createProjectDto.getName())) {
+        else if (projectRepository.checkIsProjectNameFree(createProjectDto.getName())) {
             Project project = new Project();
             project.setName(createProjectDto.getName());
             project.setCompany(createProjectDto.getCompany());
@@ -70,7 +70,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (updateProjectDto.getName().isEmpty()){
             throw new NotCorrectPropertiesException("Name or company can not be empty");
         }
-        else if (projectRepository.getProjectByName(updateProjectDto.getName())) {
+        else if (projectRepository.checkIsProjectNameFree(updateProjectDto.getName())) {
             Project project = getCurrentProject(id);
             project.setName(updateProjectDto.getName());
 
@@ -124,12 +124,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     private Employee getCurrentEmployee(Long id) {
         return employeeRepository.getEmployee(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Employee with id " + id + " does not exist"));
+            .orElseThrow(() -> new EntityNotFoundException("Employee with id " + id + " does not exist"));
     }
 
     private Project getCurrentProject(Long id) {
         return projectRepository.getProject(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Project with id " + id + " does not exist"));
+            .orElseThrow(() -> new EntityNotFoundException("Project with id " + id + " does not exist"));
     }
 
     private GetAllEmployeesByProjectDto convertToGetAllEmployeesByProjectDto(Employee employee) {

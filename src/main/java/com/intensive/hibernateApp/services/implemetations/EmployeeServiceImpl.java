@@ -7,10 +7,10 @@ import com.intensive.hibernateApp.entities.PersonalCard;
 import com.intensive.hibernateApp.entities.Project;
 import com.intensive.hibernateApp.exceptions.NotCorrectPropertiesException;
 import com.intensive.hibernateApp.exceptions.ResourceAlreadyExistException;
-import com.intensive.hibernateApp.exceptions.ResourceNotFoundException;
 import com.intensive.hibernateApp.repositories.interfaces.DepartmentRepository;
 import com.intensive.hibernateApp.repositories.interfaces.EmployeeRepository;
 import com.intensive.hibernateApp.services.interfaces.EmployeeService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -48,9 +48,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(createEmployeeDto.getLastName().isEmpty() || createEmployeeDto.getFirstName().isEmpty()) {
             throw new NotCorrectPropertiesException("First name or last name can not be null");
         }
-        else if (employeeRepository.getEmployeeByFullName(createEmployeeDto.getFirstName(), createEmployeeDto.getLastName())) {
+        else if (employeeRepository.checkIsEmployeeFullNameFree(createEmployeeDto.getFirstName(), createEmployeeDto.getLastName())) {
             Department department = departmentRepository.getDepartment(createEmployeeDto.getDepartmentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Department id " + createEmployeeDto.getDepartmentId()
+                .orElseThrow(() -> new EntityNotFoundException("Department id " + createEmployeeDto.getDepartmentId()
                     + " does not exist"));
 
             Employee employee = new Employee();
@@ -133,18 +133,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private PersonalCard getCurrentPersonalCard(Employee employee) {
         return employeeRepository.getEmployeePersonalCard(employee.getId())
-            .orElseThrow(() -> new ResourceNotFoundException("Personal card of employee" +
+            .orElseThrow(() -> new EntityNotFoundException("Personal card of employee" +
                 employee.getFirstName() + " " + employee.getLastName() + " does not exist"));
     }
 
     private Department getCurrentDepartment(Long id) {
         return departmentRepository.getDepartment(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Department with id " + " does not exist"));
+            .orElseThrow(() -> new EntityNotFoundException("Department with id " + id + " does not exist"));
     }
 
     private Employee getCurrentEmployee(Long id) {
         return employeeRepository.getEmployee(id).
-            orElseThrow(() -> new ResourceNotFoundException("Employee with id " + id + " does not exist"));
+            orElseThrow(() -> new EntityNotFoundException("Employee with id " + id + " does not exist"));
     }
 
     private GetAllProjectsByEmployeeDto convertToGetAllProjectsByEmployee(Project project) {

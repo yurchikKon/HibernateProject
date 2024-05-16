@@ -4,9 +4,9 @@ import com.intensive.hibernateApp.controllers.dtos.department.*;
 import com.intensive.hibernateApp.entities.Department;
 import com.intensive.hibernateApp.exceptions.NotCorrectPropertiesException;
 import com.intensive.hibernateApp.exceptions.ResourceAlreadyExistException;
-import com.intensive.hibernateApp.exceptions.ResourceNotFoundException;
 import com.intensive.hibernateApp.repositories.interfaces.DepartmentRepository;
 import com.intensive.hibernateApp.services.interfaces.DepartmentService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -45,7 +45,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if(createDepartmentDto.getName().isEmpty()) {
             throw new NotCorrectPropertiesException("Name can not be null");
         }
-        else if (departmentRepository.getDepartmentByName(createDepartmentDto.getName())) {
+        else if (departmentRepository.checkIsDepartmentNameFree(createDepartmentDto.getName())) {
             Department department = new Department();
             department.setName(createDepartmentDto.getName());
 
@@ -64,7 +64,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if(updateDepartmentDto.getName().isEmpty()) {
             throw new NotCorrectPropertiesException("Name can not be null");
         }
-        else if (departmentRepository.getDepartmentByName(updateDepartmentDto.getName())) {
+        else if (departmentRepository.checkIsDepartmentNameFree(updateDepartmentDto.getName())) {
             Department department = getCurrentDepartment(id);
             department.setName(updateDepartmentDto.getName());
 
@@ -94,7 +94,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private Department getCurrentDepartment(Long id) {
         return departmentRepository.getDepartment(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Department with id " + id + " does not exist"));
+            .orElseThrow(() -> new EntityNotFoundException("Department with id " + id + " does not exist"));
     }
 
     private CreateDepartmentDto convertToCreateDepartment(Department department) {

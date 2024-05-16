@@ -18,7 +18,7 @@ public interface ProjectRepository {
 
     Project deleteProject(Project project);
 
-    boolean getProjectByName(String name);
+    boolean checkIsProjectNameFree(String name);
 
     Project addEmployeeToProject(Project project, Employee employee);
 

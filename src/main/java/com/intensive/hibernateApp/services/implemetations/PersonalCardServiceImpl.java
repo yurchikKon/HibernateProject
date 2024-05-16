@@ -1,17 +1,13 @@
 package com.intensive.hibernateApp.services.implemetations;
 
-import com.intensive.hibernateApp.controllers.dtos.department.*;
 import com.intensive.hibernateApp.controllers.dtos.personalCard.*;
-import com.intensive.hibernateApp.controllers.dtos.project.GetProjectDto;
-import com.intensive.hibernateApp.controllers.dtos.project.UpdateProjectDto;
-import com.intensive.hibernateApp.entities.Department;
 import com.intensive.hibernateApp.entities.Employee;
 import com.intensive.hibernateApp.entities.PersonalCard;
 import com.intensive.hibernateApp.exceptions.NotCorrectPropertiesException;
-import com.intensive.hibernateApp.exceptions.ResourceNotFoundException;
 import com.intensive.hibernateApp.repositories.interfaces.EmployeeRepository;
 import com.intensive.hibernateApp.repositories.interfaces.PersonalCardRepository;
 import com.intensive.hibernateApp.services.interfaces.PersonalCardService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -53,16 +49,9 @@ public class PersonalCardServiceImpl implements PersonalCardService {
         }
         else {
             Employee employee = employeeRepository.getEmployee(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee with id " + employeeId + " does not exist"));
+                .orElseThrow(() -> new EntityNotFoundException("Employee with id " + employeeId + " does not exist"));
 
-            PersonalCard personalCard = PersonalCard.builder()
-                .age(createPersonalCardDto.getAge())
-                .male(createPersonalCardDto.getMale())
-                .position(createPersonalCardDto.getPosition())
-                .salary(createPersonalCardDto.getSalary())
-                .currentAddress(createPersonalCardDto.getCurrentAddress())
-                .phoneNumber(createPersonalCardDto.getPhoneNumber())
-                .build();
+            PersonalCard personalCard = convertFromCreatePersonalCardDto(createPersonalCardDto);
 
             employee.setPersonalCard(personalCard);
 
@@ -102,7 +91,11 @@ public class PersonalCardServiceImpl implements PersonalCardService {
 
     private PersonalCard getCurrentPersonalCard(Long id) {
         return personalCardRepository.getPersonalCard(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Personal card with id " + id + " does not exist"));
+            .orElseThrow(() -> new EntityNotFoundException("Personal card with id " + id + " does not exist"));
+    }
+
+    private PersonalCard convertFromCreatePersonalCardDto(CreatePersonalCardDto createPersonalCardDto) {
+        return modelMapper.map(createPersonalCardDto, PersonalCard.class);
     }
 
     private CreatePersonalCardDto convertToCreatePersonalCard(PersonalCard personalCard) {
