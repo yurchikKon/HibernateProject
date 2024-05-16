@@ -19,15 +19,15 @@ public interface EmployeeRepository {
 
     Employee createEmployee(Employee employee, Department department);
 
-    Employee updateEmployee(UpdateEmployeeDto updateEmployeeDto, Employee employee);
+    Employee updateEmployee(Employee employee);
 
     Employee deleteEmployee(Employee employee);
 
     boolean getEmployeeByFullName(String firstName, String lastName);
 
-    Set<Employee> getAllEmployeeByDepartment(Department department);
+    Set<Employee> getAllEmployeeByDepartment(Long id);
 
-    Optional<PersonalCard> getEmployeePersonalCard(Employee employee);
+    Optional<PersonalCard> getEmployeePersonalCard(Long id);
 
-    Set<Project> getAllProjectsByEmployee(Employee employee);
+    Set<Project> getAllProjectsByEmployee(Long id);
 }

@@ -117,10 +117,11 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public Set<Employee> getAllEmployeeByProject(Project project) {
+    public Set<Employee> getAllEmployeeByProject(Long id) {
         Session session = sessionFactory.openSession();
-        Project projectConnected = session.merge(project);
-        Set<Employee> employeeSet = projectConnected.getEmployees();
+        Project project = session.createQuery("select p from Project p join fetch p.employees e where p.id = :id", Project.class)
+            .setParameter("id", id).uniqueResult();
+        Set<Employee> employeeSet = project.getEmployees();
         session.close();
 
         return employeeSet;

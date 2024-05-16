@@ -67,7 +67,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public Employee updateEmployee(UpdateEmployeeDto updateEmployeeDto, Employee employee) {
+    public Employee updateEmployee(Employee employee) {
         Session session = sessionFactory.openSession();
         try {
             session.beginTransaction();
@@ -112,30 +112,35 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public Set<Employee> getAllEmployeeByDepartment(Department department) {
+    public Set<Employee> getAllEmployeeByDepartment(Long id) {
         Session session = sessionFactory.openSession();
-        Department departmentConnected = session.merge(department);
-        Set<Employee> employeeSet = departmentConnected.getEmployees();
+        Department department = session.createQuery("select d from Department d join fetch" +
+            " d.employees where d.id = :id", Department.class)
+            .setParameter("id", id).uniqueResult();
+        Set<Employee> employeeSet = department.getEmployees();
         session.close();
 
         return employeeSet;
     }
 
     @Override
-    public Optional<PersonalCard> getEmployeePersonalCard(Employee employee) {
+    public Optional<PersonalCard> getEmployeePersonalCard(Long id) {
         Session session = sessionFactory.openSession();
-        Employee employeeConnected = session.merge(employee);
-        PersonalCard personalCard = employeeConnected.getPersonalCard();
+        Employee employee = session.createQuery("select e from Employee e join fetch" +
+                " e.personalCard where e.id = :id", Employee.class)
+            .setParameter("id", id).uniqueResult();
+        PersonalCard personalCard = employee.getPersonalCard();
         session.close();
 
         return Optional.ofNullable(personalCard);
     }
 
     @Override
-    public Set<Project> getAllProjectsByEmployee(Employee employee) {
+    public Set<Project> getAllProjectsByEmployee(Long id) {
         Session session = sessionFactory.openSession();
-        Employee employeeConnected = session.merge(employee);
-        Set<Project> projectSet = employeeConnected.getProjects();
+        Employee employee = session.createQuery("select e from Employee e join fetch e.projects where e.id = :id", Employee.class)
+            .setParameter("id", id).uniqueResult();
+        Set<Project> projectSet = employee.getProjects();
         session.close();
 
         return projectSet;

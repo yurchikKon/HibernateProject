@@ -76,7 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = getCurrentEmployee(id);
         employee.setLastName(updateEmployeeDto.getLastName());
 
-        UpdateEmployeeDto employeeDto = convertToUpdateEmployee(employeeRepository.updateEmployee(updateEmployeeDto, employee));
+        UpdateEmployeeDto employeeDto = convertToUpdateEmployee(employeeRepository.updateEmployee(employee));
 
         log.info("Employee last name was updated to {}", employeeDto.getLastName());
 
@@ -98,7 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Set<GetAllEmployeesByDepartmentDto> getAllEmployeesByDepartment(Long id) {
         Department department = getCurrentDepartment(id);
 
-        Set<GetAllEmployeesByDepartmentDto> employeesSetDto = employeeRepository.getAllEmployeeByDepartment(department).stream()
+        Set<GetAllEmployeesByDepartmentDto> employeesSetDto = employeeRepository.getAllEmployeeByDepartment(id).stream()
             .map(this::convertToGetAllEmployeesByDepartment).collect(Collectors.toSet());
 
         log.info("All employees by department {} were returned", department.getName());
@@ -122,7 +122,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Set<GetAllProjectsByEmployeeDto> getAllProjectsByEmployee(Long id) {
         Employee employee = getCurrentEmployee(id);
 
-        Set<Project> projectSet = employeeRepository.getAllProjectsByEmployee(employee);
+        Set<Project> projectSet = employeeRepository.getAllProjectsByEmployee(id);
         Set<GetAllProjectsByEmployeeDto> projectsSetDto = projectSet.stream()
             .map(this::convertToGetAllProjectsByEmployee).collect(Collectors.toSet());
 
@@ -132,7 +132,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private PersonalCard getCurrentPersonalCard(Employee employee) {
-        return employeeRepository.getEmployeePersonalCard(employee)
+        return employeeRepository.getEmployeePersonalCard(employee.getId())
             .orElseThrow(() -> new ResourceNotFoundException("Personal card of employee" +
                 employee.getFirstName() + " " + employee.getLastName() + " does not exist"));
     }

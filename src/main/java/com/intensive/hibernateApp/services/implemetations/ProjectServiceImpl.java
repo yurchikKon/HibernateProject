@@ -114,7 +114,7 @@ public class ProjectServiceImpl implements ProjectService {
     public Set<GetAllEmployeesByProjectDto> getAllEmployeesByProject(Long id) {
         Project project = getCurrentProject(id);
 
-        Set<GetAllEmployeesByProjectDto> projectDtoSet = projectRepository.getAllEmployeeByProject(project).stream()
+        Set<GetAllEmployeesByProjectDto> projectDtoSet = projectRepository.getAllEmployeeByProject(id).stream()
             .map(this::convertToGetAllEmployeesByProjectDto).collect(Collectors.toSet());
 
         log.info("All employees by project {} were returned", project.getName());

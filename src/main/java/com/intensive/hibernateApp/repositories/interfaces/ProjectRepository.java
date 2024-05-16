@@ -22,5 +22,5 @@ public interface ProjectRepository {
 
     Project addEmployeeToProject(Project project, Employee employee);
 
-    Set<Employee> getAllEmployeeByProject(Project project);
+    Set<Employee> getAllEmployeeByProject(Long id);
 }

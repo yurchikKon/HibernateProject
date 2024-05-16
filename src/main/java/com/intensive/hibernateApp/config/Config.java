@@ -17,8 +17,8 @@ import java.util.Properties;
 @EnableTransactionManagement
 public class Config {
 
-    private final static String ENTITIES_PACKAGE = "com/intensive/hibernateApp/entities";
-    private final static String DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+    private static final String ENTITIES_PACKAGE = "com/intensive/hibernateApp/entities";
+    private static final String DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
 
     @Value("${spring.datasource.driver-class-name}")
     private String dbDriver;
